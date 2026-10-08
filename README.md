@@ -1,0 +1,2 @@
+# Blinde oracle
+Слепой оракл 

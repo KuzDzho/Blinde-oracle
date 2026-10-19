@@ -333,7 +333,8 @@ test("астрологические факты совпадают с расчё
     assert.equal(ctx.planetSign, sky.bodies[ctx.planet].sign);
     assert.equal(ctx.retrograde, sky.bodies[ctx.planet].retrograde);
     const ru = generateForecast(sign, date, "ru");
-    assert.ok(ru.general.includes(`${ctx.house} доме`), ru.general);
+    assert.equal(/(?:^|\s)(?:I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII) доме/.test(ru.general), false);
+    assert.equal(/\b(?:house|houses)\b/.test(generateForecast(sign, date, "en").general), false);
     assert.ok(ru.general.includes(PLANETS[ctx.planet].ru.nom), ru.general);
     if (ctx.retrograde) {
       assert.equal(/ретроград/i.test(ru.general), true, ru.general);

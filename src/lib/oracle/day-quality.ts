@@ -41,8 +41,13 @@ function family(list: readonly { id: string; family: Family }[], id: string): Fa
 
 function isAstrologyPositionSentence(text: string): boolean {
   // Planetary positions are shared facts for the date, not duplicated horoscope writing.
-  return /^(?:ретроградный\s+)?(?:меркурий|венера|марс|юпитер|сатурн|уран|нептун|плутон|солнце|луна)\s+находится\s+в\b/i.test(text.trim())
-    || /^(?:mercury|venus|mars|jupiter|saturn|uranus|neptune|pluto|sun|moon)\s+is\s+(?:retrograde\s+)?in\b/i.test(text.trim());
+  const value = text.trim().toLocaleLowerCase();
+  const planetsRu = ["меркурий", "венера", "марс", "юпитер", "сатурн", "уран", "нептун", "плутон", "солнце", "луна"];
+  const planetsEn = ["mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "sun", "moon"];
+  const startsWithPlanet = (planets: readonly string[]) =>
+    planets.some((planet) => value.startsWith(planet) || value.startsWith(`ретроградный ${planet}`));
+  return (startsWithPlanet(planetsRu) && value.includes("находится в"))
+    || (startsWithPlanet(planetsEn) && (value.includes(" is in ") || value.includes(" is retrograde in ")));
 }
 
 function contentWords(text: string, language: AppLanguage): Set<string> {

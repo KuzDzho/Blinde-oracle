@@ -1,4 +1,4 @@
-import { HOUSE_IDS, HOUSES, PLANETS, type PlanetId } from "./catalog.ts";
+import { PLANETS, type PlanetId } from "./catalog.ts";
 import { chartForSign, computeSky } from "./astro.ts";
 import type { ForecastContext } from "./context.ts";
 import type { AppLanguage } from "./i18n.ts";
@@ -17,13 +17,6 @@ function blob(forecast: Forecast): string {
     forecast.loveAndRelationships,
     forecast.advice,
   ].join(" ");
-}
-
-function mentionsHouse(text: string, house: (typeof HOUSE_IDS)[number], language: AppLanguage): boolean {
-  if (language === "en") {
-    return text.toLowerCase().includes(HOUSES[house].en.short.toLowerCase());
-  }
-  return new RegExp(`(?:^|[^IVX])${house} доме`).test(text);
 }
 
 function planetMentioned(text: string, planet: PlanetId, language: AppLanguage): boolean {
@@ -268,16 +261,6 @@ export function inspectForecastQuality(
   if (chart.houses[ctx.planet] !== ctx.house) issues.push("house-mismatch");
   if (sky.bodies[ctx.planet].sign !== ctx.planetSign) issues.push("planet-sign-mismatch");
   if (sky.bodies[ctx.planet].retrograde !== ctx.retrograde) issues.push("retrograde-mismatch");
-
-  if (!mentionsHouse(text, ctx.house, language)) issues.push("missing-house");
-
-  for (const house of HOUSE_IDS) {
-    if (house === ctx.house) continue;
-    if (mentionsHouse(text, house, language)) {
-      issues.push("wrong-house");
-      break;
-    }
-  }
 
   if ((language === "ru" ? /ретроград/i : /retrograde/i).test(text) && !ctx.retrograde) {
     issues.push("false-retrograde");

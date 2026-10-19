@@ -88,6 +88,7 @@ export function inspectDayForecastQuality(
       ...sentences(forecast.advice, language),
     ];
     for (const sentence of allSentences) {
+      if (isAstrologyPositionSentence(sentence)) continue;
       if (sentence.split(/\s+/).filter(Boolean).length < 5) continue;
       const owners = sentenceOwners.get(sentence) ?? [];
       owners.push(sign);

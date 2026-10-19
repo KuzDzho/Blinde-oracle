@@ -11,6 +11,7 @@ import {
   textGeneratorEngine,
 } from "./generator.ts";
 import { inspectForecastQuality } from "./quality.ts";
+import { inspectDayForecastQuality } from "./day-quality.ts";
 import { ZodiacSign, ZODIAC, ZODIAC_ORDER } from "./zodiac.ts";
 
 const dateA: LocalDate = { year: 2026, month: 8, day: 22 };
@@ -333,10 +334,52 @@ test("астрологические факты совпадают с расчё
     assert.equal(ctx.planetSign, sky.bodies[ctx.planet].sign);
     assert.equal(ctx.retrograde, sky.bodies[ctx.planet].retrograde);
     const ru = generateForecast(sign, date, "ru");
-    assert.ok(ru.general.includes(`${ctx.house} доме`), ru.general);
+    assert.equal(/(?:^|\s)(?:I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII) доме/.test(ru.general), false);
+    assert.equal(/\b(?:house|houses)\b/.test(generateForecast(sign, date, "en").general), false);
     assert.ok(ru.general.includes(PLANETS[ctx.planet].ru.nom), ru.general);
     if (ctx.retrograde) {
       assert.equal(/ретроград/i.test(ru.general), true, ru.general);
     }
   }
+});
+
+
+test("все 12 прогнозов проверяются вместе: без дублей, конфликтующих советов и одинаковых сценариев", () => {
+  for (const date of [dateA, dateB, dateC]) {
+    for (const language of ["ru", "en"] as const) {
+      const forecasts = textGeneratorEngine.generateAll(date, language);
+      const contexts = ZODIAC_ORDER.map((sign) => getForecastContext(sign, date));
+      const issues = inspectDayForecastQuality(forecasts, contexts, language);
+      const blocking = issues.filter((issue) =>
+        [
+          "missing-sign",
+          "duplicate-sentence-across-signs",
+          "repeated-general-opening",
+          "duplicate-scenario-family",
+          "advice-conflicts-with-forecast",
+          "high-textual-overlap",
+        ].includes(issue.code),
+      );
+      assert.deepEqual(
+        blocking,
+        [],
+        `${language} ${date.year}-${date.month}-${date.day}: ${JSON.stringify(blocking, null, 2)}`,
+      );
+    }
+  }
+});
+
+test("межзнаковый анализ обнаруживает одинаковый общий фон", () => {
+  const forecasts = textGeneratorEngine.generateAll(dateA, "ru").map((forecast) => ({ ...forecast }));
+  const contexts = ZODIAC_ORDER.map((sign) => getForecastContext(sign, dateA));
+  forecasts[1]!.general = forecasts[0]!.general;
+  const issues = inspectDayForecastQuality(forecasts, contexts, "ru");
+  assert.ok(
+    issues.some((issue) =>
+      issue.code === "duplicate-sentence-across-signs" &&
+      issue.signs.includes(ZODIAC_ORDER[0]) &&
+      issue.signs.includes(ZODIAC_ORDER[1]),
+    ),
+    "копирование общего фона между знаками должно быть обнаружено",
+  );
 });

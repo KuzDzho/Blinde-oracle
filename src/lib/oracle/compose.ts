@@ -1,4 +1,4 @@
-import { HOUSES, PLANETS, TITLES, type HouseId, type TimeId } from "./catalog.ts";
+import { PLANETS, TITLES, type TimeId } from "./catalog.ts";
 import type { ForecastContext } from "./context.ts";
 import { editSection } from "./editor.ts";
 import type { AppLanguage } from "./i18n.ts";
@@ -24,13 +24,11 @@ function pickLang(text: { ru: string; en: string }, language: AppLanguage): stri
   return language === "en" ? text.en : text.ru;
 }
 
-function houseShort(house: HouseId, language: AppLanguage): string {
-  return language === "en" ? HOUSES[house].en.short : `${house} доме`;
-}
-
-function housePrep(house: HouseId): string {
-  return house === "II" || house === "VIII" ? "во" : "в";
-}
+const SIGN_PREPOSITIONAL_RU: Record<ForecastContext["planetSign"], string> = {
+  ARIES: "Овне", TAURUS: "Тельце", GEMINI: "Близнецах", CANCER: "Раке",
+  LEO: "Льве", VIRGO: "Деве", LIBRA: "Весах", SCORPIO: "Скорпионе",
+  SAGITTARIUS: "Стрельце", CAPRICORN: "Козероге", AQUARIUS: "Водолее", PISCES: "Рыбах",
+};
 
 function towardTime(time: TimeId, language: AppLanguage): string {
   if (language === "en") {
@@ -103,23 +101,16 @@ function observation(ctx: ForecastContext, language: AppLanguage): string {
 }
 
 function atmosphere(ctx: ForecastContext, language: AppLanguage): string {
-  const mood = itemById(MOODS, ctx.moodId);
   const planet = language === "en" ? PLANETS[ctx.planet].en : PLANETS[ctx.planet].ru.nom;
-  const house = houseShort(ctx.house, language);
-  const setting = pickLang(mood.setting, language);
-  const rx =
-    ctx.retrograde
-      ? language === "en"
-        ? "retrograde "
-        : "ретроградный "
-      : "";
   if (language === "en") {
-    const place = rx ? `Retrograde ${planet} is in ${house}` : `${planet} is in ${house}`;
-    return `${place}, and ${setting}`;
+    return ctx.retrograde
+      ? `${planet} is retrograde in ${ZODIAC[ctx.planetSign].nameEn}.`
+      : `${planet} is in ${ZODIAC[ctx.planetSign].nameEn}.`;
   }
-  const prep = housePrep(ctx.house);
-  const place = rx ? `Ретроградный ${planet} ${prep} ${house}` : `${planet} ${prep} ${house}`;
-  return `${place}, и ${setting}`;
+  const sign = SIGN_PREPOSITIONAL_RU[ctx.planetSign];
+  return ctx.retrograde
+    ? `Ретроградный ${planet} находится в ${sign}.`
+    : `${planet} находится в ${sign}.`;
 }
 
 function titleOf(ctx: ForecastContext, language: AppLanguage): string {

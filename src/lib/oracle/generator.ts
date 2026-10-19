@@ -4,7 +4,6 @@ import { getForecastContext } from "./context.ts";
 import type { LocalDate } from "./dates.ts";
 import { englishTextGenerator } from "./english.ts";
 import type { AppLanguage } from "./i18n.ts";
-import { isForecastSound } from "./quality.ts";
 import { russianTextGenerator } from "./russian.ts";
 import { ZODIAC_ORDER, type ZodiacSign } from "./zodiac.ts";
 
@@ -45,10 +44,6 @@ export class TextGeneratorEngine {
       date,
       ...rendered,
     };
-    if (!isForecastSound(forecast, ctx, language)) {
-      const fallback = language === "en" ? englishTextGenerator.render(ctx) : russianTextGenerator.render(ctx);
-      return { sign, date, ...fallback };
-    }
     return forecast;
   }
 

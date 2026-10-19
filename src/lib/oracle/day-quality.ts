@@ -1,5 +1,5 @@
 import type { ForecastContext } from "./context.ts";
-import { ADVICE_ITEMS, LOVE_EVENTS, MOODS, WORK_EVENTS, FINANCE_EVENTS, familiesConflict } from "./semantics.ts";
+import { ADVICE_ITEMS, LOVE_EVENTS, MOODS, WORK_EVENTS, FINANCE_EVENTS, familiesConflict, type Family } from "./semantics.ts";
 import type { AppLanguage } from "./i18n.ts";
 import type { Forecast } from "./types.ts";
 import { ZODIAC, ZODIAC_ORDER } from "./zodiac.ts";
@@ -35,8 +35,14 @@ function sentences(text: string, language: AppLanguage): string[] {
   return text.split(/(?<=[.!?…])\s+/).map((part) => normalize(part, language)).filter((part) => part.length > 0);
 }
 
-function family(list: readonly { id: string; family: string }[], id: string): string {
+function family(list: readonly { id: string; family: Family }[], id: string): Family | "unknown" {
   return list.find((item) => item.id === id)?.family ?? "unknown";
+}
+
+function isAstrologyPositionSentence(text: string): boolean {
+  // Planetary positions are shared facts for the date, not duplicated horoscope writing.
+  return /^(?:ретроградный\\s+)?(?:меркурий|венера|марс|юпитер|сатурн|уран|нептун|плутон|солнце|луна)\\s+находится\\s+в\\b/i.test(text.trim())
+    || /^(?:mercury|venus|mars|jupiter|saturn|uranus|neptune|pluto|sun|moon)\\s+is\\s+(?:retrograde\\s+)?in\\b/i.test(text.trim());
 }
 
 function contentWords(text: string, language: AppLanguage): Set<string> {
@@ -71,8 +77,12 @@ export function inspectDayForecastQuality(
       continue;
     }
 
+    const generalSentences = forecast.general
+      .split(/(?<=[.!?…])\\s+/)
+      .filter((part) => !isAstrologyPositionSentence(part))
+      .flatMap((part) => sentences(part, language));
     const allSentences = [
-      ...sentences(forecast.general, language),
+      ...generalSentences,
       ...sentences(forecast.workAndFinance, language),
       ...sentences(forecast.loveAndRelationships, language),
       ...sentences(forecast.advice, language),
@@ -106,7 +116,9 @@ export function inspectDayForecastQuality(
       family(MOODS, ctx.moodId), family(WORK_EVENTS, ctx.workId),
       family(FINANCE_EVENTS, ctx.financeId), family(LOVE_EVENTS, ctx.loveId),
     ];
-    if (otherFamilies.some((other) => familiesConflict(adviceFamily as never, other as never))) {
+    if (adviceFamily !== "unknown" && otherFamilies.some(
+      (other) => other !== "unknown" && familiesConflict(adviceFamily, other),
+    )) {
       issues.push({ code: "advice-conflicts-with-forecast", signs: [sign], detail: `Advice family ${adviceFamily} clashes with the forecast's situation.` });
     }
 

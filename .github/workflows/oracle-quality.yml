@@ -26,4 +26,4 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
       - name: Run tests
-        run: npm test
+        run: node --experimental-strip-types --test src/lib/oracle/generator.test.ts

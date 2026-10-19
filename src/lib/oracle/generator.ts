@@ -4,9 +4,13 @@ import { getForecastContext } from "./context.ts";
 import type { LocalDate } from "./dates.ts";
 import { englishTextGenerator } from "./english.ts";
 import type { AppLanguage } from "./i18n.ts";
-import { isForecastSound } from "./quality.ts";
+import { inspectForecastQuality } from "./quality.ts";
 import { russianTextGenerator } from "./russian.ts";
 import { ZODIAC_ORDER, type ZodiacSign } from "./zodiac.ts";
+
+function qualityIssues(forecast: Forecast, ctx: ForecastContext, language: AppLanguage): string[] {
+  return inspectForecastQuality(forecast, ctx, language);
+}
 
 function renderLanguage(ctx: ForecastContext, language: AppLanguage) {
   return language === "en"
@@ -45,9 +49,9 @@ export class TextGeneratorEngine {
       date,
       ...rendered,
     };
-    if (!isForecastSound(forecast, ctx, language)) {
-      const fallback = language === "en" ? englishTextGenerator.render(ctx) : russianTextGenerator.render(ctx);
-      return { sign, date, ...fallback };
+    const issues = qualityIssues(forecast, ctx, language);
+    if (issues.length > 0) {
+      throw new Error(`Forecast quality check failed for ${sign} on ${date.year}-${date.month}-${date.day}: ${issues.join(", ")}`);
     }
     return forecast;
   }

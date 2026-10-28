@@ -76,7 +76,7 @@ test("all forecasts are framed as possibilities and pass prose checks", () => {
       assert.deepEqual(issues, [], sign + " (" + language + "): " + forecast.general + " :: " + issues.join(", "));
       if (language === "ru") {
         assert.ok(forecast.general.startsWith("Один из возможных сценариев"));
-        assert.ok(forecast.general.includes("Если это окажется актуальным"));
+        assert.ok(forecast.general.includes("Если это похоже на вашу ситуацию"));
       } else {
         assert.ok(forecast.general.startsWith("One possible scenario"));
         assert.ok(forecast.general.includes("If this feels relevant"));

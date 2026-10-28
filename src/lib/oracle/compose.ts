@@ -47,7 +47,7 @@ export function composeForecast(
 
   const continuation = language === "en"
     ? "If this feels relevant, " + lowerFirst(mood.setting)
-    : "Если это окажется актуальным, " + lowerFirst(mood.setting);
+    : "Если это похоже на вашу ситуацию, " + lowerFirst(mood.setting);
 
   const narrative = [
     sentence(opening),

@@ -1,15 +1,9 @@
-import { useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, type PointerEvent } from "react";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { CalendarStrip } from "@/components/calendar-strip";
-import {
-  Crescent,
-  FourPointStar,
-  HairlineDiamond,
-  SparkMark,
-  VenusMark,
-} from "@/components/ornament";
+import { HairlineDiamond } from "@/components/ornament";
 import { formatDate, parseISODate, toISODate } from "@/lib/oracle/dates";
 import { generateForecast } from "@/lib/oracle/generator";
 import { UI } from "@/lib/oracle/i18n";
@@ -164,18 +158,9 @@ function ForecastPage() {
               {forecast.title}
             </h1>
 
-            <ForecastBlock icon={<FourPointStar className="text-gold" />} title={copy.general}>
-              {forecast.general}
-            </ForecastBlock>
-            <ForecastBlock icon={<Crescent className="text-gold" />} title={copy.work}>
-              {forecast.workAndFinance}
-            </ForecastBlock>
-            <ForecastBlock icon={<VenusMark className="text-gold" />} title={copy.love}>
-              {forecast.loveAndRelationships}
-            </ForecastBlock>
-            <ForecastBlock icon={<SparkMark className="text-gold" />} title={copy.advice}>
-              {forecast.advice}
-            </ForecastBlock>
+            <section className="mt-7">
+              <p className="text-[0.95rem] leading-relaxed text-fg/90">{forecast.general}</p>
+            </section>
 
             <button
               type="button"
@@ -203,22 +188,3 @@ function ForecastPage() {
   );
 }
 
-function ForecastBlock({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="mt-7">
-      <h2 className="flex items-center gap-2 text-[11px] tracking-[0.22em] text-gold uppercase">
-        {icon}
-        {title}
-      </h2>
-      <p className="mt-3 text-[0.95rem] leading-relaxed text-fg/90">{children}</p>
-    </section>
-  );
-}

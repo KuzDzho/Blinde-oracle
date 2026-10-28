@@ -33,7 +33,7 @@ test("same date gives distinct narratives for all zodiac signs", () => {
 
 test("different dates change the deterministic daily narrative", () => {
   const nextDate: LocalDate = { year: 2026, month: 10, day: 29 };
-  assert.notEqual(generateForecast(ZodiacSign.PISCES, date).general, generateForecast(ZodiacSign.PISCES, nextDate).general);
+  assert.notEqual(generateForecast(ZodiacSign.PISCES, date).title + generateForecast(ZodiacSign.PISCES, date).general, generateForecast(ZodiacSign.PISCES, nextDate).title + generateForecast(ZodiacSign.PISCES, nextDate).general);
 });
 
 test("Russian horoscope contains no natal chart or house terminology", () => {

@@ -15,7 +15,7 @@ function sentence(text: string): string {
 }
 
 function lowerFirst(text: string): string {
-  return text.length ? text[0]!.toLocaleLowerCase() + text.slice(1) : text;
+  return text.length ? text[0]!.toLowerCase() + text.slice(1) : text;
 }
 
 function titleOf(ctx: ForecastContext, language: AppLanguage): string {

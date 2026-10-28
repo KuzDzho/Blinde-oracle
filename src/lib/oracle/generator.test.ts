@@ -66,3 +66,27 @@ test("quality checker no longer requires houses or planetary house placements", 
   assert.equal(issues.includes("missing-house"), false);
   assert.equal(issues.includes("house-mismatch"), false);
 });
+
+test("all forecasts are framed as possibilities and pass prose checks", () => {
+  for (const sign of ZODIAC_ORDER) {
+    for (const language of ["ru", "en"] as const) {
+      const forecast = generateForecast(sign, date, language);
+      const ctx = textGeneratorEngine.getContext(sign, date);
+      const issues = inspectForecastQuality(forecast, ctx, language);
+      assert.deepEqual(issues, [], sign + " (" + language + "): " + forecast.general + " :: " + issues.join(", "));
+      if (language === "ru") {
+        assert.ok(forecast.general.startsWith("Один из возможных сценариев"));
+        assert.ok(forecast.general.includes("Если это окажется актуальным"));
+      } else {
+        assert.ok(forecast.general.startsWith("One possible scenario"));
+        assert.ok(forecast.general.includes("If this feels relevant"));
+      }
+    }
+  }
+});
+
+test("planet tone does not depend on the solar house placement", async () => {
+  const { toneFromPlacement } = await import("./astro.ts");
+  assert.equal(toneFromPlacement("mercury", "I"), toneFromPlacement("mercury", "XII"));
+  assert.equal(toneFromPlacement("venus", "II"), toneFromPlacement("venus", "VIII"));
+});

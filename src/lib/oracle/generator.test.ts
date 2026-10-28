@@ -90,3 +90,8 @@ test("planet tone does not depend on the solar house placement", async () => {
   assert.equal(toneFromPlacement("mercury", "I"), toneFromPlacement("mercury", "XII"));
   assert.equal(toneFromPlacement("venus", "II"), toneFromPlacement("venus", "VIII"));
 });
+
+test("the twelve signs do not reuse the same core scenario on one date", () => {
+  const moodIds = ZODIAC_ORDER.map((sign) => textGeneratorEngine.getContext(sign, date).moodId);
+  assert.equal(new Set(moodIds).size, 12);
+});

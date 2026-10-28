@@ -24,8 +24,8 @@ function titleOf(ctx: ForecastContext, language: AppLanguage): string {
 }
 
 /**
- * A compact daily horoscope written as a possibility, not a guaranteed event.
- * It does not expose natal-chart data, houses or technical astrology terminology.
+ * A compact daily horoscope framed as a possibility, not a guaranteed event.
+ * The reader sees no natal-chart data, houses or technical astrology terminology.
  */
 export function composeForecast(
   ctx: ForecastContext,
@@ -39,10 +39,11 @@ export function composeForecast(
 } {
   const mood = itemById(MOODS, ctx.moodId);
   const meta = ZODIAC[ctx.sign];
-
   const opening = language === "en"
-    ? "For " + meta.nameEn + ", one possible scenario today is that they " + lowerFirst(mood.open)
-    : "У " + meta.genitive + " сегодня может возникнуть ситуация, когда " + lowerFirst(mood.open);
+    ? (/^will\b/i.test(mood.open)
+        ? "One possible scenario for " + meta.nameEn + " today is that they " + lowerFirst(mood.open)
+        : "One possible scenario for " + meta.nameEn + " today: " + mood.open)
+    : "Один из возможных сценариев для " + meta.genitive + " на сегодня: " + lowerFirst(mood.open);
 
   const continuation = language === "en"
     ? "If this feels relevant, " + lowerFirst(mood.setting)

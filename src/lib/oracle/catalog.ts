@@ -1,7 +1,7 @@
 import type { ZodiacSign } from "./zodiac.ts";
 
 /** Версия алгоритма входит в seed, чтобы смена логики давала новые тексты. */
-export const ALGORITHM_VERSION = "v15";
+export const ALGORITHM_VERSION = "v16";
 export const GENERATOR_SALT = "BLIND_ORACLE";
 
 export const TONE_IDS = [

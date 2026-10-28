@@ -165,21 +165,6 @@ export function chartForSign(sky: SkySnapshot, sign: ZodiacSign): SignChart {
   return { sign, houses };
 }
 
-const HOUSE_TONES: Record<HouseId, ToneId> = {
-  I: "initiative",
-  II: "caution",
-  III: "clarity",
-  IV: "patience",
-  V: "openness",
-  VI: "clarity",
-  VII: "openness",
-  VIII: "depth",
-  IX: "renewal",
-  X: "initiative",
-  XI: "openness",
-  XII: "patience",
-};
-
 const PLANET_TONES: Record<PlanetId, ToneId> = {
   mercury: "clarity",
   venus: "openness",
@@ -193,12 +178,9 @@ const PLANET_TONES: Record<PlanetId, ToneId> = {
   selene: "patience",
 };
 
-const ANGULAR: ReadonlySet<HouseId> = new Set(["I", "IV", "VII", "X"]);
-
-export function toneFromPlacement(planet: PlanetId, house: HouseId): ToneId {
-  if (planet === "saturn" || planet === "lilith") return PLANET_TONES[planet];
-  if (ANGULAR.has(house)) return PLANET_TONES[planet];
-  return HOUSE_TONES[house];
+export function toneFromPlacement(planet: PlanetId, _house: HouseId): ToneId {
+  // The daily narrative must not derive its meaning from a house placement.
+  return PLANET_TONES[planet];
 }
 
 export interface FeaturedPlacement {
@@ -213,11 +195,9 @@ export interface FeaturedPlacement {
   tone: ToneId;
 }
 
-function scorePlacement(planet: PlanetId, house: HouseId, sky: SkySnapshot, used: ReadonlySet<string>): number {
+function scorePlacement(planet: PlanetId, sky: SkySnapshot, used: ReadonlySet<string>): number {
   let score = 1;
-  if (ANGULAR.has(house)) score += 3;
   if (sky.bodies[planet].retrograde) score += 2;
-  if (house === "VI" || house === "II" || house === "VII" || house === "X") score += 1;
   if (used.has(planet)) score -= 4;
   const hasAspect = sky.aspects.some((item) => item.planetA === planet || item.planetB === planet);
   if (hasAspect) score += 1;
@@ -225,8 +205,8 @@ function scorePlacement(planet: PlanetId, house: HouseId, sky: SkySnapshot, used
 }
 
 /**
- * Выбирает проверяемое положение: планета реально в этом доме для этого знака.
- * Текст не может подменить дом или аспект.
+ * Выбирает планету по реальным положениям, ретроградности и аспектам на дату.
+ * Дома не используются для выбора смыслового акцента прогноза.
  */
 export function featurePlacement(
   sky: SkySnapshot,
@@ -238,7 +218,7 @@ export function featurePlacement(
   const ranked = MENTIONABLE.map((planet) => ({
     planet,
     house: chart.houses[planet],
-    score: scorePlacement(planet, chart.houses[planet], sky, usedPlanets),
+    score: scorePlacement(planet, sky, usedPlanets),
   })).sort((a, b) => b.score - a.score || a.planet.localeCompare(b.planet));
 
   const chosen = ranked[Math.abs(pickIndex) % ranked.length]!;

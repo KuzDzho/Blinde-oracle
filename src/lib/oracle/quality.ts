@@ -11,7 +11,6 @@ function textOf(forecast: Forecast): string {
   return [forecast.title, forecast.general].filter(Boolean).join(" ").trim();
 }
 
-/** Checks the single-reader-facing horoscope, not obsolete topic fields. */
 export function inspectForecastQuality(
   forecast: Forecast,
   ctx: ForecastContext,
@@ -34,9 +33,7 @@ export function inspectForecastQuality(
 
   if (language === "ru") {
     if (!CYRILLIC.test(text)) issues.push("russian-missing-cyrillic");
-    if (/\b(?:the|today|your|with|from|mercury|venus|mars|jupiter|saturn|house)\b/i.test(text)) {
-      issues.push("english-in-russian");
-    }
+    if (/\b(?:the|today|your|with|from|mercury|venus|mars|jupiter|saturn|house)\b/i.test(text)) issues.push("english-in-russian");
     if (NATAL_TERMS_RU.test(text)) issues.push("natal-chart-reference");
   } else {
     if (CYRILLIC.test(text)) issues.push("russian-in-english");
@@ -46,18 +43,12 @@ export function inspectForecastQuality(
   const sentences = text.split(/(?<=[.!?…])\s+/).filter(Boolean);
   if (sentences.length < 3) issues.push("too-short");
   if (sentences.some((part) => part.trim().split(/\s+/).length < 4)) issues.push("sentence-fragment");
-
   const normalized = sentences.map((part) => part.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").trim());
   if (new Set(normalized).size !== normalized.length) issues.push("duplicate-sentence");
   if (language === "ru" && /\bретроград\w*\b/i.test(text)) issues.push("technical-astrology-jargon");
-
   return issues;
 }
 
-export function isForecastSound(
-  forecast: Forecast,
-  ctx: ForecastContext,
-  language: AppLanguage,
-): boolean {
+export function isForecastSound(forecast: Forecast, ctx: ForecastContext, language: AppLanguage): boolean {
   return inspectForecastQuality(forecast, ctx, language).length === 0;
 }

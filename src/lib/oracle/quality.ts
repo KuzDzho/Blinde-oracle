@@ -39,7 +39,7 @@ export function inspectForecastQuality(
     if (/\b(?:the|today|your|with|from|mercury|venus|mars|jupiter|saturn|house)\b/i.test(text)) issues.push("english-in-russian");
     if (NATAL_TERMS_RU.test(narrative)) issues.push("natal-chart-reference");
     if (!/^Один из возможных сценариев\b/i.test(narrative)) issues.push("missing-possibility-framing");
-    if (!/\bЕсли это окажется актуальным\b/i.test(narrative)) issues.push("missing-conditional-framing");
+    if (!/\bЕсли это похоже на вашу ситуацию\b/i.test(narrative)) issues.push("missing-conditional-framing");
     if (CERTAINTY_RU.test(narrative)) issues.push("unsupported-certainty");
   } else {
     if (CYRILLIC.test(text)) issues.push("russian-in-english");
